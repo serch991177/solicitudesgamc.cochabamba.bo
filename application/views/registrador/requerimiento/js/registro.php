@@ -1,0 +1,222 @@
+<script>
+    ClassicEditor
+        .create(document.querySelector('#editor'), {
+            toolbar: ['heading', '|', 'bold', 'italic', 'link', 'bulletedList', 'numberedList'],
+            heading: {
+                options: [{
+                        model: 'paragraph',
+                        title: 'Parrafo',
+                        class: 'ck-heading_paragraph'
+                    },
+                    {
+                        model: 'heading1',
+                        view: 'h1',
+                        title: 'Titulo',
+                        class: 'ck-heading_heading1'
+                    },
+                    {
+                        model: 'heading2',
+                        view: 'h2',
+                        title: 'Subtitulo',
+                        class: 'ck-heading_heading2'
+                    }
+                ]
+            }
+        })
+        .then(newEditor => {
+            editor = newEditor;
+        })
+        .catch(error => {
+            console.log(error);
+        });
+    ClassicEditor
+        .create(document.querySelector('#editor1'), {
+            toolbar: [],
+
+        })
+        .then(newEditor => {
+            editor1 = newEditor;
+        })
+        .catch(error => {
+            console.log(error);
+        });
+    $('.datepicker').pickadate({
+
+        monthsFull: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'],
+        weekdaysFull: ['Domingo', 'Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado'],
+        weekdaysShort: ['Dom', 'Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab'],
+        labelMonthNext: 'Siguiente Mes',
+        labelMonthPrev: 'Anterior Mes',
+        labelMonthSelect: 'Seleccionar un Mes',
+        labelYearSelect: 'Seleccionar un Año',
+        selectYears: true,
+        selectMonths: true,
+        today: 'Hoy',
+        clear: 'Limpiar',
+        close: 'Cerrar',
+        selectYears: 120,
+        formatSubmit: 'yyyy-mm-dd',
+        min: new Date()
+    });
+    $(document).ready(function() {
+
+        $('#unidad_medida').select2();
+        $("#unidad_medida").select2({
+            width: '100%'
+        });
+
+        var today = new Date();
+        today.setDate(today.getDate() + 2)
+        var to_$input = $('#fecha_limite').pickadate(),
+            to_picker = to_$input.pickadate('picker')
+            to_picker.set('select', today);
+
+        var table = $('#table').dataTable({
+            data: <?php echo $item ?>,
+            responsive: true,
+
+            "lengthMenu": [
+                [15, 30, 45, -1],
+                [15, 30, 45, "Todo"]
+            ],
+            "pageLength": 15,
+
+            "language": {
+                "search": "Buscar",
+                "lengthMenu": "Mostrar _MENU_",
+                "zeroRecords": "No se encontró nada",
+                "info": "Mostrando registros del _START_ al _END_ de un total de _TOTAL_ registros",
+                "infoEmpty": "No hay registros disponibles",
+                "infoFiltered": "(Filtrado de _MAX_ registros totales)",
+                "previous": "Anterior",
+                "oPaginate": {
+                    "sNext": "Siguiente",
+                    "sLast": "Último",
+                    "sPrevious": "Anterior",
+                    "sFirst": "Primero"
+                },
+                "oAria": {
+                    "sSortAscending": ": Activar para ordenar la columna de manera ascendente",
+                    "sSortDescending": ": Activar para ordenar la columna de manera descendente"
+                },
+            },
+
+            columns: [
+
+
+                {
+
+                    title: "Nº",
+                    width: "5%",
+                    data: "row",
+                },
+
+                {
+                    title: "Código",
+                    data: "codigo",
+                    width: "8%"
+                },
+
+                {
+                    title: "Ítem",
+                    data: 'nombre_item',
+                    width: "20%",
+                },
+                {
+                    title: "Ver Descripción",
+                    className: 'text-center',
+                    data: null,
+                    render: function(data, type, full, meta) {
+
+                        var boton = '';
+                        boton += '<button style="display: inline;" class="palette-Celeste bg button" data-tooltip="Ver Descripción" onclick="pasarDatos(\'' + data.descripcion + '\',\'' + data.nombre_item + '\')" data-open="modalDescripcion"><i class="las la-eye la-2x"></i></button>';
+
+                        return boton;
+                    },
+                    width: "10%"
+                },
+                {
+                    title: "Unidad de Medida",
+                    data: "unidad_medida",
+                    width: "10%"
+                },
+
+                {
+                    title: "Cantidad Requerida",
+                    data: "cantidad",
+                    width: "10%"
+                },
+
+                {
+                    title: "Fecha Final de Presentación de Propuesta",
+                    data: "limite",
+                    width: "15%"
+                },
+
+                {
+                    title: "Acción",
+                    className: 'text-center',
+                    width: "15%",
+                    data: null,
+                    render: function(data, type, full, meta) {
+
+                        var button = '';
+
+                        var limite = data.fecha_limite;
+
+                        if (new Date(limite + ' 00:00:00') < new Date(hoy())) {
+                            var url = '<?= site_url() ?>' + 'propuestas';
+                            var urld = '<?= site_url() ?>' + 'print-propuestas';
+
+                            button += '<form  style="display : inline;" action="' + url + '" method="post" id="form' + data.id_item + '">';
+                            button += '<input type="hidden" name="item" value="' + data.id_item + '">';
+                            button += '<button type="submit" data-tooltip="Ver Propuestas" class="palette-Celeste bg button" form="form' + data.id_item + '">';
+                            button += '<i class="las la-users la-2x"></i></button>';
+                            button += '</form>';
+
+                            button += '<form  style="display : inline;" action="' + urld + '" method="post" id="formprint' + data.id_item + '" target="_blank">';
+                            button += '<input type="hidden" name="item" value="' + data.id_item + '">';
+                            button += '<button type="submit" data-tooltip="Imprimir Propuestas" class="palette-Celeste bg button" form="formprint' + data.id_item + '">';
+                            button += '<i class="las la-print la-2x"></i></button>';
+                            button += '</form>';
+                        }
+
+                        if (data.propuestas == 0) {
+                            var urle = '<?= site_url() ?>' + 'editar-requerimiento';
+
+                            button += '<form  style="display : inline;" action="' + urle + '" method="post" id="formedit' + data.id_item + '">';
+                            button += '<input type="hidden" name="item" value="' + data.id_item + '">';
+                            button += '<button type="submit" data-tooltip="Editar Ítem" class="palette-Celeste bg button" form="formedit' + data.id_item + '">';
+                            button += '<i class="las la-pen la-2x"></i></button>';
+                            button += '</form>';
+                        }
+
+                        return button;
+                    }
+                }
+            ]
+        });
+
+
+    });
+    $("#file_requerimiento").change(function() {
+        if (document.getElementById('file_requerimiento').val != '') {
+            document.getElementById('aviso_file').style.display = 'inline';
+        }
+    });
+
+    function pasarDatos(descripcion, titulo) {
+
+        document.getElementById("titulo").innerHTML = titulo;
+        document.getElementById("editor").style.color = '#000000';
+        editor1.setData(descripcion);
+        editor1.isReadOnly = true;
+    }
+    function hoy(){
+        var f = new Date();
+        var hoy = f.getFullYear() + "-" + (f.getMonth() +1) + "-" + f.getDate();
+        hoy = hoy + ' 00:00:00';
+        return hoy;
+
+    }
+</script>
